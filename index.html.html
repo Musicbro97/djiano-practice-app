@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Djiano Practice App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+  <style>
+    /* Full original styles */
+    sup[title] { cursor: help; color: #FFAF45; font-size: 0.9rem; }
+    body { margin: 0; font-family: 'Inter', sans-serif; background: #f4f4f6; color: #333; transition: background 0.3s, color 0.3s; }
+    body.dark { background: #1e1e1e; color: #ddd; }
+    header { text-align: center; padding: 2rem 0; }
+    h1 { font-size: 2rem; margin: 0; font-family: 'DM Serif Display', serif; }
+    .tagline { color: #666; }
+    main { max-width: 600px; margin: 0 auto; padding: 1rem; text-align: center; }
+    #practiceDisplay { margin-bottom: 1.5rem; }
+    #timeSpent { font-weight: bold; margin-bottom: 0.5rem; }
+    #chordBox { font-size: 3rem; letter-spacing: 0.5rem; margin: 1rem 0; transition: transform 0.3s ease, opacity 0.3s ease; }
+    #previewBox { font-size: 1.5rem; opacity: 0.6; margin-bottom: 0.5rem; transition: transform 0.3s ease, opacity 0.3s ease; }
+    #barIndicator { display:flex; justify-content:center; gap:0.5rem; margin-bottom:1rem; }
+    .barDot { width:12px; height:12px; background:#ccc; border-radius:50%; opacity:0.4; transition: opacity 0.2s; }
+    .barDot.active { opacity:1; }
+    #controls { display:grid; gap:1rem; }
+    fieldset { background:#fff; border:none; border-radius:8px; padding:1rem; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+    body.dark fieldset { background:#2a2a2a; box-shadow:0 2px 6px rgba(0,0,0,0.5); }
+    legend { font-weight:bold; margin-bottom:0.5rem; }
+    label, select, input { font-size:0.9rem; }
+    select, input[type="number"], input[type="range"] { padding:0.3rem; margin-left:0.5rem; border:1px solid #ccc; border-radius:4px; }
+    .toggle-switch { display:flex; align-items:center; background:#fff; padding:0.75rem 1rem; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); gap:0.5rem; }
+    body.dark .toggle-switch { background:#2a2a2a; box-shadow:0 2px 6px rgba(0,0,0,0.5); }
+    .toggle-switch input { display:none; }
+    .toggle-switch label { position:relative; width:40px; height:20px; background:#ccc; border-radius:10px; cursor:pointer; }
+    .toggle-switch label::after { content:''; position:absolute; top:2px; left:2px; width:16px; height:16px; background:#fff; border-radius:50%; transition:0.2s; }
+    .toggle-switch input:checked + label { background:#FFAF45; }
+    .toggle-switch input:checked + label::after { transform:translateX(20px); }
+    .toggle-switch span { flex:1; }
+    .button-group { text-align:center; margin:1rem 0; }
+    button { background:#FFAF45; color:#fff; border:none; padding:0.5rem 1rem; margin:0 0.5rem; border-radius:6px; cursor:pointer; font-size:1rem; box-shadow:0 2px 4px rgba(0,0,0,0.1); transition:opacity 0.2s; }
+    button:disabled { opacity:0.5; cursor:not-allowed; }
+    button:hover:not(:disabled) { opacity:0.9; }
+    @media(max-width:480px){ main{padding:0.5rem;} #chordBox{font-size:2rem;letter-spacing:0.25rem;} }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Djiano</h1>
+    <p class="tagline">Master chords & progressions with rhythm and soul</p>
+  </header>
+  <main>
+    <section id="practiceDisplay">
+      <div id="timeSpent">Elapsed Time: 00:00</div>
+      <div id="chordBox">---</div>
+      <div id="previewBox">Next: —</div>
+      <div id="barIndicator"></div>
+    </section>
+    <section id="controls">
+      <fieldset>
+        <legend>Pitch</legend>
+        <label for="keySelect">Key:</label>
+        <select id="keySelect"></select>
+        <label for="scaleSelect">Scale:</label>
+        <select id="scaleSelect"></select>
+        <label for="modeSelect">Mode:</label>
+        <select id="modeSelect"><option value="chord">Single Chord</option><option value="progression">Progression</option></select>
+      </fieldset>
+      <fieldset>
+        <legend>Practice Settings</legend>
+        <label for="bpm">BPM:</label><input type="number" id="bpm" min="30" max="300" value="80" />
+        <label for="bars">Bars:</label><input type="number" id="bars" min="1" max="8" value="4" />
+        <label for="timeSig">Time Signature:</label>
+        <select id="timeSig"><option value="2">2/4</option><option value="3">3/4</option><option value="4" selected>4/4</option><option value="5">5/4</option><option value="6">6/8</option><option value="7">7/8</option><option value="9">9/8</option><option value="12">12/8</option></select>
+      </fieldset>
+      <fieldset>
+        <legend>Display</legend>
+        <label for="displayMode">Show:</label>
+        <select id="displayMode"><option value="chord">Chord Name</option><option value="degree">Degree</option></select>
+        <label for="chordsPerProg">Chords per Progression:</label>
+        <select id="chordsPerProg" disabled><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option></select>
+      </fieldset>
+      <div class="toggle-switch"><input type="checkbox" id="darkModeToggle"/><label for="darkModeToggle"></label><span>Dark Theme</span></div>
+      <div class="toggle-switch"><input type="checkbox" id="metronomeToggle" checked/><label for="metronomeToggle"></label><span>Metronome</span></div>
+      <div><label for="metronomeVolume">Metronome Volume</label><input type="range" id="metronomeVolume" min="0" max="1" step="0.01" value="1"/></div>
+      <div class="button-group"><button id="startBtn">Start Practice</button><button id="stopBtn" disabled>Stop</button><button id="resetBtn">Reset</button></div>
+    </section>
+  </main>
+  <audio id="metronomeClick" preload="auto"><source src="https://cdn.jsdelivr.net/gh/jshawl/chatgpt-djiano-assets/click.mp3" type="audio/mpeg"/></audio>
+  <script>
+(function(){
+  // Cache DOM
+  const DOM = {};
+  ['timeSpent','chordBox','previewBox','barIndicator','keySelect','scaleSelect','modeSelect','bpm','bars','timeSig','displayMode','chordsPerProg','darkModeToggle','metronomeToggle','metronomeVolume','startBtn','stopBtn','resetBtn','metronomeClick'].forEach(id => DOM[id] = document.getElementById(id));
+
+  // Constants
+  const audio = DOM.metronomeClick;
+  const NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const SCALES = { major:[0,2,4,5,7,9,11], minor:[0,2,3,5,7,8,10], pentatonic:[0,2,4,7,9], harmonicMinor:[0,2,3,5,7,8,11], melodicMinor:[0,2,3,5,7,9,11] };
+  const TRANSITIONS = { major:{0:[3,4,5],1:[4,5],2:[5,0],3:[4,1],4:[0,5],5:[2,3],6:[0]}, minor:{0:[3,4,5],1:[4,5],2:[3,4],3:[4,6],4:[5,0],5:[0,2],6:[0]} };
+  const ROMAN_MAP = { major:['I','ii','iii','IV','V','vi','vii°'], minor:['i','ii°','III','iv','v','VI','VII'], pentatonic:['I','II','III','V','VI'], harmonicMinor:['i','ii°','III+','iv','V','VI','vii°'], melodicMinor:['i','ii','III+','IV','V','vi°','vii°'] };
+  const QUALITY_MAP = { major:['','m','m','','','m','dim'], minor:['m','dim','','m','m','',''], pentatonic:['','','','',''], harmonicMinor:['m','dim','','m','','','dim'], melodicMinor:['m','','','','','dim','dim'] };
+
+  // State
+  let practicing=false, beatCount=0, barCount=0, intervalMs=0, nextTime=0, metroOn=true;
+  let currentProg=[], nextProg=[], rootIndex=0, startTimestamp=0;
+
+  // Helpers
+  const clamp=(v,min,max)=>(v<min?min:v>max?max:v);
+  const now=()=>performance.now();
+
+  // Populate
+  function populate(sel,arr,def){sel.innerHTML='';arr.forEach(({value,label})=>{const o=document.createElement('option');o.value=value;o.textContent=label;sel.append(o);});if(def)sel.value=def;}
+  populate(DOM.scaleSelect,Object.keys(SCALES).map(k=>({value:k,label:k})),'major');
+  populate(DOM.keySelect,[{value:'all',label:'All Keys'},...NOTES.map(n=>({value:n,label:n}))],'all');
+
+  // Dark Mode
+  DOM.darkModeToggle.checked=localStorage.getItem('darkMode')==='true';
+  document.body.classList.toggle('dark',DOM.darkModeToggle.checked);
+  DOM.darkModeToggle.addEventListener('change',e=>{document.body.classList.toggle('dark',e.target.checked);localStorage.setItem('darkMode',e.target.checked);});
+
+  // Metronome Volume
+  const savedVol=parseFloat(localStorage.getItem('metronomeVolume'));
+  audio.volume=isNaN(savedVol)?1:savedVol;DOM.metronomeVolume.value=audio.volume;
+  DOM.metronomeVolume.addEventListener('input',e=>{audio.volume=e.target.value;localStorage.setItem('metronomeVolume',e.target.value);});
+  DOM.metronomeToggle.addEventListener('change',e=>metroOn=e.target.checked);
+
+  // Progression toggle
+  DOM.modeSelect.addEventListener('change',()=>{DOM.chordsPerProg.disabled=DOM.modeSelect.value!=='progression';});
+  DOM.modeSelect.dispatchEvent(new Event('change'));
+
+  // Bar dots
+  function initDots(){DOM.barIndicator.innerHTML='';const ts=clamp(+DOM.timeSig.value,2,12);for(let i=0;i<ts;i++){const d=document.createElement('div');d.className='barDot';DOM.barIndicator.append(d);} }
+  const updateDots=i=>Array.from(DOM.barIndicator.children).forEach((d,idx)=>d.classList.toggle('active',idx===i));
+
+  // Generation
+  function generateProgression(count){const scale=DOM.scaleSelect.value,steps=SCALES[scale],all=steps.map((_,i)=>i);let seq=[all[Math.floor(Math.random()*all.length)]];for(let i=1;i<count;i++){let opts=TRANSITIONS[scale]?.[seq[i-1]]||[...all];if(Math.random()<0.2)opts=[...all];opts=opts.filter(x=>x!==seq[i-1]);seq.push(opts[Math.floor(Math.random()*opts.length)]);}return seq;}
+  function genChordIdx(cnt){return DOM.modeSelect.value==='progression'?generateProgression(cnt):Array.from({length:cnt},()=>Math.floor(Math.random()*SCALES[DOM.scaleSelect.value].length));}
+
+  // Label
+  function label(idx){const scale=DOM.scaleSelect.value;if(DOM.displayMode.value==='degree')return ROMAN_MAP[scale][idx]||'';const steps=SCALES[scale],note=NOTES[(rootIndex+steps[idx])%12],qual=QUALITY_MAP[scale][idx]||'';return note+(qual==='dim'?'°':qual);}  
+
+  // Render
+  function renderAll(){DOM.chordBox.classList.add('fade');DOM.previewBox.classList.add('fade');setTimeout(()=>{DOM.chordBox.textContent=currentProg.map(label).join(' – ');DOM.previewBox.textContent='Next: '+nextProg.map(label).join(' – ');DOM.chordBox.classList.remove('fade');DOM.previewBox.classList.remove('fade');},150);}  
+
+  // Tick loop
+  function tick(){if(!practicing)return;const elapsed=now()-startTimestamp,m=Math.floor(elapsed/60000),s=Math.floor((elapsed%60000)/1000);DOM.timeSpent.textContent=`Elapsed Time: ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;const t=now();if(t>=nextTime){if(metroOn){audio.currentTime=0;audio.play().catch(()=>{});}const ts=clamp(+DOM.timeSig.value,2,12),beat=beatCount%ts;updateDots(beat);if(beat===0){barCount++;if(barCount>=+DOM.bars.value){currentProg=[...nextProg];nextProg=genChordIdx(currentProg.length);renderAll();barCount=0;}}beatCount++;nextTime+=intervalMs;}requestAnimationFrame(tick);}  
+
+  // Controls
+  function start(){rootIndex=DOM.keySelect.value==='all'?Math.floor(Math.random()*NOTES.length):NOTES.indexOf(DOM.keySelect.value);const bpm=clamp(+DOM.bpm.value,+DOM.bpm.min,+DOM.bpm.max),bars=clamp(+DOM.bars.value,+DOM.bars.min,+DOM.bars.max);DOM.bpm.value=bpm;DOM.bars.value=bars;practicing=true;beatCount=0;barCount=0;intervalMs=60000/bpm;startTimestamp=now();nextTime=startTimestamp+intervalMs;initDots();const cnt=DOM.modeSelect.value==='progression'?clamp(+DOM.chordsPerProg.value,2,SCALES[DOM.scaleSelect.value].length):1;currentProg=genChordIdx(cnt);nextProg=genChordIdx(cnt);renderAll();DOM.startBtn.disabled=true;DOM.stopBtn.disabled=false;tick();}
+  function stop(){practicing=false;DOM.startBtn.disabled=false;DOM.stopBtn.disabled=true;}function reset(){stop();DOM.timeSpent.textContent='Elapsed Time: 00:00';DOM.chordBox.textContent='---';DOM.previewBox.textContent='Next: —';DOM.barIndicator.innerHTML='';DOM.keySelect.value='all';DOM.scaleSelect.value='major';DOM.modeSelect.value='chord';DOM.bpm.value=80;DOM.bars.value=4;DOM.timeSig.value='4';DOM.displayMode.value='chord';DOM.chordsPerProg.value='2';DOM.chordsPerProg.disabled=true;DOM.darkModeToggle.checked=false;document.body.classList.remove('dark');DOM.metronomeToggle.checked=true;audio.volume=1;DOM.metronomeVolume.value=1;}  
+
+  DOM.startBtn.addEventListener('click',start);
+  DOM.stopBtn.addEventListener('click',stop);
+  DOM.resetBtn.addEventListener('click',reset);
+  DOM.displayMode.addEventListener('change',()=>practicing&&renderAll());
+})();
+</script>
+</body>
+</html>
